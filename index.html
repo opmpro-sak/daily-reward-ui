@@ -116,7 +116,77 @@
             text-transform: uppercase; box-shadow: 0 8px 20px rgba(255, 145, 77, 0.4);
         }
 
-        .btn-close { position: absolute; top: 15px; right: 20px; color: #fff; font-size: 22px; cursor: pointer; opacity: 0.5; z-index: 20; }
+    
+.header-actions {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+
+/* 1. Container Utama di Pojok Kanan Atas */
+.header-actions { 
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    display: flex; 
+    gap: 8px; /* Jarak antara tombol ? dan X */
+    z-index: 100; 
+}
+
+/* 2. Styling Tombol (Berlaku untuk Info dan Close) */
+.btn-info, .btn-close { 
+    width: 30px; 
+    height: 30px; 
+    background: rgba(255, 255, 255, 0.15); 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%; /* Biar bulat sempurna */
+    color: #fff; 
+    font-size: 14px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    font-weight: 900;
+}
+
+/* 3. Efek Hover */
+.btn-info:hover, .btn-close:hover { 
+    background: rgba(255, 255, 255, 0.3); 
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* 4. Update CSS Info Box agar posisinya pas di bawah tombol */
+.info-box {
+    display: none; 
+    position: absolute; 
+    top: 40px; 
+    right: 0; 
+    width: 200px;
+    background: rgba(15, 15, 15, 0.98); /* Lebih gelap biar teks kebaca */
+    border: 1px solid #ffd700;
+    color: #eee; 
+    padding: 12px;
+    border-radius: 12px; 
+    font-size: 11px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 110;
+}
+
+.info-box.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
     </style>
 </head>
 <body>
@@ -198,7 +268,17 @@
             container.innerHTML = `
                 <div class="modal-deep-overlay" id="mainModal">
                     <div class="exclusive-modal-box" style="background-image: url('${selectedSkin.bg}')">
-                        <div class="btn-close" onclick="document.getElementById('mainModal').remove()">✕</div>
+                        <div class="header-actions">
+                            <div class="btn-info" onclick="toggleInfo(event)">?</div>
+                            <div class="btn-close" onclick="document.getElementById('mainModal').remove()">✕</div>
+                            
+                            <div class="info-box" id="myInfoBox">
+                                <b style="color:#ffd700">INFO REWARD</b><br>
+                                • Login tiap hari untuk klaim.<br>
+                                • Day 7 adalah Mega Treasure.<br>
+                                • Klik tombol CLAIM untuk ambil!
+                            </div>
+                        </div>
                         <div class="glass-inner-layer">
                             <div class="title-main">Daily Rewards</div>
                             
@@ -234,6 +314,19 @@
                 }, 1000);
             };
         }
+        // Fungsi untuk buka/tutup info
+function toggleInfo(event) {
+    // Stop event biar gak ngetrigger klik ke element di bawahnya
+    event.stopPropagation();
+    const infoBox = document.getElementById('myInfoBox');
+    infoBox.classList.toggle('active');
+}
+
+// Tambahan: Klik di mana saja untuk tutup info box
+document.addEventListener('click', function() {
+    const infoBox = document.getElementById('myInfoBox');
+    if (infoBox) infoBox.classList.remove('active');
+});
 
         // Tampilkan skin default saat pertama kali buka
         window.onload = () => renderModal('');
