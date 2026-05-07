@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Skin Daily Reward</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
+
+        body {
+            margin: 0; padding: 0;
+            background-color: #0a0a0a;
+            height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            gap: 20px;
+        }
+
+        /* --- UI PEMILIH SKIN --- */
+        .skin-selector {
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); /* Maksimal 4 tombol per baris */
+    gap: 10px; 
+    z-index: 100;
+    width: 90%;
+    max-width: 400px; /* Samakan dengan lebar modal agar simetris */
+    margin-bottom: 20px;
+}
+
+.btn-skin {
+    padding: 12px 5px; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05); 
+    color: #ccc; 
+    font-weight: bold; 
+    font-size: 11px;
+    transition: 0.3s;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.btn-skin:hover { 
+    background: #ffd700; 
+    color: #000; 
+    transform: translateY(-2px); 
+}
+        /* --- MODAL STYLE --- */
+        .modal-deep-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(1px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10000;
+        }
+
+        .exclusive-modal-box {
+            position: relative; width: 90%; max-width: 400px;
+            background-size: cover; background-position: center;
+            border-radius: 20px; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .glass-inner-layer {
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(1px);
+            padding: 25px 15px 15px;
+        }
+
+        .title-main {
+            color: #fff; font-size: 24px; font-weight: 900; text-align: center;
+            text-transform: uppercase; margin-bottom: 25px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+        }
+
+        .reward-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+        .chest-item {
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px; padding: 15px 5px;
+            display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+
+        .chest-item img { width: 70%; height: auto; }
+
+        .ready-item img { 
+            animation: chestFloatReady 2.5s infinite ease-in-out; 
+            filter: drop-shadow(0 0 15px rgba(255,215,0,0.6));
+        }
+
+        @keyframes chestFloatReady {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.1); }
+        }
+
+        .claimed-item { filter: grayscale(1); opacity: 0.4; }
+        .center-claimed-tag {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-5deg);
+            background: #ffd700; color: #000; padding: 4px 12px;
+            border-radius: 8px; font-size: 11px; font-weight: 900; z-index: 10;
+        }
+
+        .ready-item { border: 1px solid rgba(255, 215, 0, 0.8) !important; background: rgba(255, 215, 0, 0.15); }
+
+        .day-7-special {
+            grid-column: span 3; margin-top: 10px;
+            flex-direction: row !important; justify-content: space-around;
+            padding: 20px !important; background: rgba(255, 255, 255, 0.2);
+        }
+        .day-7-special b { color: #ffd700; font-size: 18px; }
+
+        .btn-claim-deep {
+            width: 100%; margin-top: 30px; padding: 18px;
+            border-radius: 18px; border: none;
+            background: linear-gradient(180deg, #ffde59 0%, #ff914d 100%);
+            color: #000000; font-weight: 900; font-size: 18px; cursor: pointer;
+            text-transform: uppercase; box-shadow: 0 8px 20px rgba(255, 145, 77, 0.4);
+        }
+
+        .btn-close { position: absolute; top: 15px; right: 20px; color: #fff; font-size: 22px; cursor: pointer; opacity: 0.5; z-index: 20; }
+    </style>
+</head>
+<body>
+<h5 style="color: white;">click for modal UI </h5>
+    <div class="skin-selector">
+        
+        <button class="btn-skin" onclick="renderModal('skin1')">Skin 1 (treasure)</button>
+        <button class="btn-skin" onclick="renderModal('skin2')">Skin 2 (Candy)</button>
+        <button class="btn-skin" onclick="renderModal('skin3')">Skin 3 (Pirate)</button>
+        <button class="btn-skin" onclick="renderModal('skin4')">Skin 4 (Sea World)</button>
+        <button class="btn-skin" onclick="renderModal('skin5')">Skin 5 </button>
+        <button class="btn-skin" onclick="renderModal('skin6')">Skin 6 </button>
+        <button class="btn-skin" onclick="renderModal('skin7')">Skin 7 </button>
+        <button class="btn-skin" onclick="renderModal('skin8')">Skin 8 </button>
+    </div>
+
+    <div id="app"></div>
+
+    <script>
+        // --- DATA ASSET TIAP SKIN ---
+        // Silakan edit link gambar di bawah ini
+        const skins = {
+            skin1: {
+                bg: "https://www.rpgfan.com/wp-content/uploads/2023/05/Cat-Quest-III-Screenshot-013.webp",
+                goldChest: "https://static.wikia.nocookie.net/piratepower/images/3/32/Icon_Gold_Chest.png/revision/latest?cb=20160313142816",
+                luxuryChest: "https://gallery.yopriceville.com/var/resizes/Free-Clipart-Pictures/Money.PNG/Gold_Coins_Treasure_Chest_PNG_Clipart_Picture.png?m=1629832499"
+            },
+            skin2: {
+                bg: "https://media.craiyon.com/2025-10-08/-mnfkA2SR-KNvV35J6gTQQ.webp",
+                goldChest: "https://png.pngtree.com/recommend-works/png-clipart/20250101/ourmid/pngtree-candy-lollipop-png-image_14953143.png",
+                luxuryChest: "https://png.pngtree.com/png-vector/20240101/ourmid/pngtree-sweethearts-candy-box-clipart-filled-with-candys-and-cookies-png-image_11397414.png"
+            },
+            skin3: {
+                bg: "https://wallpapers.com/images/hd/sea-of-thieves-phone-57ntpqh5113chhfy.jpg",
+                goldChest: "https://png.pngtree.com/png-vector/20240515/ourmid/pngtree-box-crate-in-pixel-art-style-png-image_12445203.png",
+                luxuryChest: "https://png.pngtree.com/png-clipart/20230929/original/pngtree-treasure-chest-illustration-png-image_13016720.png"
+            },
+            skin4: {
+                bg: "https://media.craiyon.com/2025-09-29/osj_g3ZlRYW-jlY9xDmIEA.webp",
+                goldChest: "https://png.pngtree.com/png-vector/20240830/ourmid/pngtree-white-pearl-clipart-isolated-on-black-background-png-image_13673806.png",
+                luxuryChest: "https://static.vecteezy.com/system/resources/previews/055/298/385/non_2x/3d-render-of-a-pearl-in-a-seashell-png.png"
+            },
+             skin5: {
+                bg: "",
+                goldChest: "",
+                luxuryChest: ""
+            },
+            skin6: {
+                bg: "",
+                goldChest: "",
+                luxuryChest: ""
+            },
+            skin7: {
+                bg: "",
+                goldChest: "",
+                luxuryChest: ""
+            },
+            skin8: {
+                bg: "",
+                goldChest: "",
+                luxuryChest: ""
+            },
+        };
+
+        const rewards = [
+            { day: 1, status: 'claimed' },
+            { day: 2, status: 'claimed' },
+            { day: 3, status: 'ready' },
+            { day: 4, status: 'locked' },
+            { day: 5, status: 'locked' },
+            { day: 6, status: 'locked' },
+            { day: 7, status: 'locked' }
+        ];
+
+        function renderModal(skinKey) {
+            const container = document.getElementById('app');
+            const selectedSkin = skins[skinKey]; // Ambil data berdasarkan skin yang diklik
+
+            container.innerHTML = `
+                <div class="modal-deep-overlay" id="mainModal">
+                    <div class="exclusive-modal-box" style="background-image: url('${selectedSkin.bg}')">
+                        <div class="btn-close" onclick="document.getElementById('mainModal').remove()">✕</div>
+                        <div class="glass-inner-layer">
+                            <div class="title-main">Daily Rewards</div>
+                            
+                            <div class="reward-grid">
+                                ${rewards.slice(0, 6).map(r => `
+                                    <div class="chest-item ${r.status === 'ready' ? 'ready-item' : (r.status === 'claimed' ? 'claimed-item' : '')}">
+                                        ${r.status === 'claimed' ? '<div class="center-claimed-tag">CLAIMED</div>' : ''}
+                                        <span style="font-size:10px; color:black; margin-bottom:5px">DAY ${r.day}</span>
+                                        <img src="${selectedSkin.goldChest}">
+                                    </div>
+                                `).join('')}
+                                
+                                <div class="chest-item day-7-special">
+                                    <div style="text-align:left">
+                                        <span style="font-size:10px; color:black; display:block">EXCLUSIVE</span>
+                                        <b>DAY 07 CHEST</b>
+                                    </div>
+                                    <img src="${selectedSkin.luxuryChest}">
+                                </div>
+                            </div>
+
+                            <button class="btn-claim-deep" id="claimBtn">CLAIM NOW</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('claimBtn').onclick = function() {
+                this.innerText = "COLLECTED!";
+                this.disabled = true;
+                setTimeout(() => {
+                    document.getElementById('mainModal').remove();
+                }, 1000);
+            };
+        }
+
+        // Tampilkan skin default saat pertama kali buka
+        window.onload = () => renderModal('');
+    </script>
+</body>
+</html>
