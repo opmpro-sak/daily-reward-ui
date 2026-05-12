@@ -187,6 +187,97 @@
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* STATUS MISSED - Background agak merah gelap */
+.missed-item {
+    filter: grayscale(0.5);
+    background: rgba(255, 69, 58, 0.2) !important;
+    border: 1px solid rgba(255, 69, 58, 0.5) !important;
+}
+
+
+.recover-tag {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(5deg);
+    background: #ff453a;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 900;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.pay-info {
+    font-size: 9px;
+    color: #ff453a;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+/* Overlay untuk Pop Up Bayar */
+.pay-modal-overlay {
+    position: absolute; /* Biar muncul di dalam modal utama */
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: none; /* Sembunyi dulu */
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    border-radius: 20px;
+}
+
+.pay-modal-content {
+    background: #1a1a1a;
+    border: 2px solid #ff453a;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 250px;
+    box-shadow: 0 0 30px rgba(255, 69, 58, 0.4);
+    animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pay-modal-content h3 { color: #fff; margin: 0 0 10px; font-size: 18px; }
+.pay-modal-content p { color: #ccc; font-size: 13px; margin-bottom: 20px; }
+
+.pay-btn-confirm {
+    background: linear-gradient(180deg, #ff453a, #a30000);
+    color: white; border: none; padding: 12px 25px;
+    border-radius: 10px; font-weight: 900; cursor: pointer;
+    width: 100%; margin-bottom: 10px;
+}
+
+.pay-btn-cancel {
+    background: none; color: #777; border: none; cursor: pointer;
+    font-size: 12px; font-weight: bold;
+}
+
+@keyframes popScale {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+/* Teks Nominal Reward (Warna Kuning/Emas) */
+.reward-value {
+    font-size: 10px;
+    color: #ffd700; /* Warna emas */
+    font-weight: 900;
+    margin-top: 5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Khusus Teks Biaya Missed (Warna Merah) */
+.missed-cost {
+    font-size: 9px;
+    color: #ff453a;
+    font-weight: 900;
+    margin-top: 5px;
+}
+
     </style>
 </head>
 <body>
@@ -252,76 +343,152 @@
         };
 
         const rewards = [
-            { day: 1, status: 'claimed' },
-            { day: 2, status: 'claimed' },
-            { day: 3, status: 'ready' },
-            { day: 4, status: 'locked' },
-            { day: 5, status: 'locked' },
-            { day: 6, status: 'locked' },
-            { day: 7, status: 'locked' }
-        ];
+        { day: 1, status: 'claimed', rewardAmount: 'Rp 1.000' },
+        { day: 2, status: 'missed', rewardAmount: 'Rp 2.000' },
+        { day: 3, status: 'ready', rewardAmount: 'Rp 3.000' },
+        { day: 4, status: 'locked', rewardAmount: 'Rp 4.000' },
+        { day: 5, status: 'locked', rewardAmount: 'Rp 5.000' },
+        { day: 6, status: 'locked', rewardAmount: 'Rp 6.000' },
+        { day: 7, status: 'locked', rewardAmount: 'Rp 10.000' }
+    ];
 
         function renderModal(skinKey) {
-            const container = document.getElementById('app');
-            const selectedSkin = skins[skinKey]; // Ambil data berdasarkan skin yang diklik
+    const container = document.getElementById('app');
+    const selectedSkin = skins[skinKey];
+    if (!selectedSkin) return;
 
-            container.innerHTML = `
-                <div class="modal-deep-overlay" id="mainModal">
-                    <div class="exclusive-modal-box" style="background-image: url('${selectedSkin.bg}')">
-                        <div class="header-actions">
-                            <div class="btn-info" onclick="toggleInfo(event)">?</div>
-                            <div class="btn-close" onclick="document.getElementById('mainModal').remove()">✕</div>
-                            
-                            <div class="info-box" id="myInfoBox">
-                                <b style="color:#ffd700">INFO REWARD</b><br>
-                                • Login tiap hari untuk klaim.<br>
-                                • Day 7 adalah Mega Treasure.<br>
-                                • Klik tombol CLAIM untuk ambil!
-                            </div>
-                        </div>
-                        <div class="glass-inner-layer">
-                            <div class="title-main">Daily Rewards</div>
-                            
-                            <div class="reward-grid">
-                                ${rewards.slice(0, 6).map(r => `
-                                    <div class="chest-item ${r.status === 'ready' ? 'ready-item' : (r.status === 'claimed' ? 'claimed-item' : '')}">
-                                        ${r.status === 'claimed' ? '<div class="center-claimed-tag">CLAIMED</div>' : ''}
-                                        <span style="font-size:10px; color:black; margin-bottom:5px">DAY ${r.day}</span>
-                                        <img src="${selectedSkin.goldChest}">
-                                    </div>
-                                `).join('')}
-                                
-                                <div class="chest-item day-7-special">
-                                    <div style="text-align:left">
-                                        <span style="font-size:10px; color:black; display:block">EXCLUSIVE</span>
-                                        <b>DAY 07 CHEST</b>
-                                    </div>
-                                    <img src="${selectedSkin.luxuryChest}">
-                                </div>
-                            </div>
-
-                            <button class="btn-claim-deep" id="claimBtn">CLAIM NOW</button>
-                        </div>
+    container.innerHTML = `
+        <div class="modal-deep-overlay" id="mainModal">
+            <div class="exclusive-modal-box" style="background-image: url('${selectedSkin.bg}')">
+                <div class="pay-modal-overlay" id="payModal">
+                    <div class="pay-modal-content">
+                        <h3>RECOVER REWARD</h3>
+                        <p>Bayar <span style="color:#ffd700">RP. 1.000</span> untuk mengambil hadiah yang terlewat?</p>
+                        <button class="pay-btn-confirm" onclick="confirmPayment()">PAY NOW</button>
+                        <button class="pay-btn-cancel" onclick="closePayModal()">CANCEL</button>
                     </div>
                 </div>
-            `;
+                <div class="header-actions">
+                    <div class="btn-info" onclick="toggleInfo(event)">?</div>
+                    <div class="btn-close" onclick="document.getElementById('mainModal').remove()">✕</div>
+                    <div class="info-box" id="myInfoBox">
+                        <b style="color:#ffd700">INFO REWARD</b><br>
+                        • Login tiap hari untuk klaim.<br>
+                        • <span style="color:#ff453a">Missed:</span> Bayar 100 Diamond.<br>
+                        • Day 7 adalah Mega Treasure.
+                    </div>
+                </div>
 
-            document.getElementById('claimBtn').onclick = function() {
-                this.innerText = "COLLECTED!";
-                this.disabled = true;
-                setTimeout(() => {
-                    document.getElementById('mainModal').remove();
-                }, 1000);
-            };
-        }
-        // Fungsi untuk buka/tutup info
-function toggleInfo(event) {
-    // Stop event biar gak ngetrigger klik ke element di bawahnya
-    event.stopPropagation();
-    const infoBox = document.getElementById('myInfoBox');
-    infoBox.classList.toggle('active');
+                <div class="glass-inner-layer">
+                    <div class="title-main">Daily Rewards</div>
+                    <div class="reward-grid">
+                        ${rewards.slice(0, 6).map(r => {
+                            let statusClass = '';
+                            if (r.status === 'ready') statusClass = 'ready-item';
+                            else if (r.status === 'claimed') statusClass = 'claimed-item';
+                            else if (r.status === 'missed') statusClass = 'missed-item';
+
+                            return `
+                                <div class="chest-item ${statusClass}" 
+                                    ${r.status === 'missed' ? `onclick="handleRecover(${r.day})"` : ''} 
+                                    style="${r.status === 'missed' ? 'cursor:pointer' : ''}">
+                                    
+                                    ${r.status === 'claimed' ? '<div class="center-claimed-tag">CLAIMED</div>' : ''}
+                                    ${r.status === 'missed' ? '<div class="recover-tag">RECOVER</div>' : ''}
+                                    
+                                    <span style="font-size:10px; color:black; margin-bottom:5px; font-weight:900;">DAY ${r.day}</span>
+                                    <img src="${selectedSkin.goldChest}">
+                                    
+                                    ${r.status === 'missed' 
+                                        ? `<span class="missed-cost">Bayar: Rp 1.000</span>` 
+                                        : `<span class="reward-value">${r.rewardAmount}</span>`
+                                    }
+                                </div>
+                            `;
+                        }).join('')}
+                        
+                        <div class="chest-item day-7-special">
+                            <div style="text-align:left">
+                                <span style="font-size:10px; color:black; display:block; font-weight:900;">EXCLUSIVE</span>
+                                <b>DAY 07 CHEST</b>
+                                <div class="reward-value" style="font-size: 14px;">${rewards[6].rewardAmount}</div>
+                            </div>
+                            <img src="${selectedSkin.luxuryChest}">
+                        </div>
+                    </div>
+                    <button class="btn-claim-deep" id="claimBtn">CLAIM NOW</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Logika tombol claim utama
+    document.getElementById('claimBtn').onclick = function() {
+        this.innerText = "COLLECTED!";
+        this.disabled = true;
+        setTimeout(() => { document.getElementById('mainModal').remove(); }, 1000);
+    };
 }
 
+let selectedDayToRecover = null;
+
+function handleRecover(day) {
+    selectedDayToRecover = day;
+    const payModal = document.getElementById('payModal');
+    payModal.style.display = 'flex';
+}
+
+function closePayModal() {
+    const payModal = document.getElementById('payModal');
+    payModal.style.display = 'none';
+}
+
+function confirmPayment() {
+    // Simulasi bayar
+    const payModal = document.getElementById('payModal');
+    const content = payModal.querySelector('.pay-modal-content');
+    
+    content.innerHTML = `
+        <div style="font-size: 40px;">✅</div>
+        <h3 style="color:#ffd700">SUCCESS!</h3>
+        <p>Day ${selectedDayToRecover} has been claimed.</p>
+    `;
+    
+    setTimeout(() => {
+        closePayModal();
+        // Reset isi modal ke semula biar bisa dipake lagi
+        renderModal('skin1'); // Refresh tampilan
+    }, 2000);
+}
+
+function confirmPayment() {
+    // 1. Cari data di array rewards berdasarkan hari yang dipilih
+    const dayData = rewards.find(r => r.day === selectedDayToRecover);
+    
+    if (dayData) {
+        // 2. Ubah statusnya dari 'missed' menjadi 'claimed'
+        dayData.status = 'claimed';
+        
+        // 3. Tampilkan efek sukses di modal bayar
+        const payModal = document.getElementById('payModal');
+        const content = payModal.querySelector('.pay-modal-content');
+        
+        content.innerHTML = `
+            <div style="font-size: 40px; margin-bottom:10px;">✅</div>
+            <h3 style="color:#ffd700">PAYMENT SUCCESS!</h3>
+            <p>Day ${selectedDayToRecover} status updated to Claimed.</p>
+        `;
+        
+        // 4. Tunggu 1.5 detik, tutup modal bayar, lalu refresh modal utama
+        setTimeout(() => {
+            closePayModal();
+            
+            // Ambil skin yang sedang aktif saat ini (kita simpan di variabel global atau ambil manual)
+            // Di sini saya asumsikan kamu pakai 'skin1' atau skin yang terakhir dipilih
+            renderModal('skin1'); 
+        }, 1500);
+    }
+}
 // Tambahan: Klik di mana saja untuk tutup info box
 document.addEventListener('click', function() {
     const infoBox = document.getElementById('myInfoBox');
